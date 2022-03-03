@@ -17,6 +17,8 @@ public class AccountsController : ControllerBase
     public async Task<IActionResult> Post(CreateAccountRequest request)
     {
         var command = new CreateAccount.Command(request.Mail, request.Password);
+
+
         var activityFeature = HttpContext.Features.Get<IHttpActivityFeature>();
 
         var currentActivity = activityFeature?.Activity;
@@ -25,7 +27,12 @@ public class AccountsController : ControllerBase
         activityFeature?.Activity
             .AddBaggage("correlation.id", Guid.NewGuid().ToString());
 
+        activityFeature?.Activity
+            .AddBaggage("user.identification", request.Mail);
+
         var result = await _mediator.Send(command);
+
+        var currentActivity2 = activityFeature?.Activity;
         return Ok(result);
     }
 }
